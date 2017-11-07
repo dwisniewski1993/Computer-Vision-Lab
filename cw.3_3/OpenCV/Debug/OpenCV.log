@@ -1,0 +1,4 @@
+﻿  OpenCV.cpp
+j:\desktop\computer-vision-lab\cw.3_3\opencv\opencv.cpp(25): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+  OpenCV.vcxproj -> j:\Desktop\Computer-Vision-Lab\cw.3_3\Debug\OpenCV.exe
+  OpenCV.vcxproj -> j:\Desktop\Computer-Vision-Lab\cw.3_3\Debug\OpenCV.pdb (Partial PDB)
