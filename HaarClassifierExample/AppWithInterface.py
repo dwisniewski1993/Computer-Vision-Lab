@@ -1,5 +1,4 @@
 import pygame
-import numpy
 from pygame.locals import QUIT, KEYDOWN, K_ESCAPE, MOUSEMOTION
 from sys import exit
 from cvimage import ImageOpenCV
@@ -12,6 +11,7 @@ RESOLUTION_X = 800
 RESOLUTION_Y = 600
 BOX_WIDTH = 150
 BAR_HEIGHT = 30
+IMAGE_BG_COLOR = (0, 0, 0)  # R G B
 
 
 def cv2pygame(image):
@@ -20,13 +20,15 @@ def cv2pygame(image):
 
 class ImageBox:
     def __init__(self, width, height):
-        self.image_box = pygame.Surface((width, height))
+        self.draw = pygame.Surface((width, height))
         self.width = width
         self.height = height
         self.x_pivot = None
         self.y_pivot = None
-        self.position = None
+        self.x_delta = None
+        self.y_delta = None
         self.image = None
+        self.image_converted = None
         self.mode = 0
 
     def load_image(self, name):
@@ -36,18 +38,29 @@ class ImageBox:
                 self.x_pivot = int((self.width - self.image.width) / 2)
             else:
                 self.x_pivot = None
+                self.x_delta = self.image.width - self.width
             if self.image.height <= self.height:
                 self.y_pivot = int((self.height - self.image.height) / 2)
             else:
                 self.y_pivot = None
+                self.y_delta = self.image.height - self.height
+        self.image_converted = pygame.image.frombuffer(self.image.to_draw().tostring(), self.image.to_draw().shape[1::-1], "RGB")
+        self.change_position(0, 0)
 
     def change_position(self, x, y):
-        self.position = self.position[0] + x, self.position[1] + y
-
-    def draw(self):
-        if self.image:
-            image = pygame.image.frombuffer(self.image.to_draw.tostring(), self.image.shape[1::-1], "RGB")
-            self.image_box.blit(image, self.position)
+        x_percent = x / self.width
+        y_percent = y / self.height
+        if self.x_pivot:
+            x_position = self.x_pivot
+        else:
+            x_position = -int(round(x_percent * self.x_delta, 0))
+        if self.y_pivot:
+            y_position = self.y_pivot
+        else:
+            y_position = -int(round(y_percent * self.y_delta, 0))
+        if self.image_converted:
+            self.draw.fill(IMAGE_BG_COLOR)
+            self.draw.blit(self.image_converted, (x_position, y_position))
 
 
 class InterfaceModule:
@@ -76,17 +89,17 @@ class InterfaceModule:
             if event.type == MOUSEMOTION:
                 if BOX_WIDTH <= event.pos[0] <= RESOLUTION_X-BOX_WIDTH:
                     if BAR_HEIGHT <= event.pos[1]:
-                        print(event.pos)
+                        self.image_display.change_position(event.pos[0]-BOX_WIDTH, event.pos[1]-BAR_HEIGHT)
 
     def run(self):
         while True:
             self.main_display.fill((24, 131, 215))
+            self.event()
             self.main_display.blit(self.masks_box, (0, 0))
             self.main_display.blit(self.images_box, (RESOLUTION_X-BOX_WIDTH, 0))
             self.main_display.blit(self.menu_bar, (BOX_WIDTH, 0))
-            self.event()
+            self.main_display.blit(self.image_display.draw, (BOX_WIDTH, BAR_HEIGHT))
             pygame.display.update()
-            # exit()
 
 
 if __name__ == "__main__":
