@@ -11,9 +11,9 @@ from boxes import ScrollableBox
 
 
 # Config variables:
-MODE = pygame.DOUBLEBUF  # [pygame.DOUBLEBUF or pygame.FULLSCREEN]
-RESOLUTION_X = 800
-RESOLUTION_Y = 600
+MODE = pygame.FULLSCREEN  # [pygame.DOUBLEBUF or pygame.FULLSCREEN]
+RESOLUTION_X = 1366
+RESOLUTION_Y = 768
 BOX_WIDTH = 150
 BOX_OFFSET = 7
 BAR_HEIGHT = 30
