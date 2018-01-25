@@ -1,4 +1,5 @@
 import pygame
+import cv2
 from pygame.locals import QUIT, KEYDOWN, K_ESCAPE, K_m, MOUSEMOTION
 from sys import exit
 from cvimage import ImageOpenCV
@@ -11,11 +12,8 @@ RESOLUTION_X = 800
 RESOLUTION_Y = 600
 BOX_WIDTH = 150
 BAR_HEIGHT = 30
+FOOTER = 10
 IMAGE_BG_COLOR = (0, 0, 0)  # R G B
-
-
-def cv2pygame(image):
-    return pygame.image.frombuffer(image.tostring(), image.shape[1::-1], "RGB")
 
 
 class ImageBox:
@@ -53,17 +51,18 @@ class ImageBox:
             self.mode = 1
         else:
             self.mode = 0
-        self.image_converted = pygame.image.frombuffer(self.image.to_draw(self.mode).tostring(),
-                                                       self.image.to_draw(self.mode).shape[1::-1], "RGB")
+        if self.image_converted:
+            self.image_converted = pygame.image.frombuffer(self.image.to_draw(self.mode).tostring(),
+                                                           self.image.to_draw(self.mode).shape[1::-1], "RGB")
 
     def change_position(self, x, y):
         x_percent = x / self.width
         y_percent = y / self.height
-        if self.x_pivot:
+        if self.x_pivot is not None:
             x_position = self.x_pivot
         else:
             x_position = -int(round(x_percent * self.x_delta, 0))
-        if self.y_pivot:
+        if self.y_pivot is not None:
             y_position = self.y_pivot
         else:
             y_position = -int(round(y_percent * self.y_delta, 0))
@@ -75,7 +74,7 @@ class ImageBox:
 class InterfaceModule:
     def __init__(self):
         self.main_display = pygame.display.set_mode((RESOLUTION_X, RESOLUTION_Y), MODE)
-        self.image_display = ImageBox(RESOLUTION_X - 2*BOX_WIDTH, RESOLUTION_Y - BAR_HEIGHT)
+        self.image_display = ImageBox(RESOLUTION_X - 2*BOX_WIDTH, RESOLUTION_Y - BAR_HEIGHT - FOOTER)
         self.image_display.load_image("lena.jpg")
         # TODO: Create Box with all masks
         self.masks_box = pygame.Surface((BOX_WIDTH, RESOLUTION_Y))
@@ -97,7 +96,7 @@ class InterfaceModule:
 
             if event.type == MOUSEMOTION:
                 if BOX_WIDTH <= event.pos[0] <= RESOLUTION_X-BOX_WIDTH:
-                    if BAR_HEIGHT <= event.pos[1]:
+                    if BAR_HEIGHT <= event.pos[1] <= RESOLUTION_Y-FOOTER:
                         self.image_display.change_position(event.pos[0]-BOX_WIDTH, event.pos[1]-BAR_HEIGHT)
 
             if event.type == KEYDOWN and event.key == K_m:
@@ -105,7 +104,6 @@ class InterfaceModule:
 
     def run(self):
         while True:
-            self.main_display.fill((24, 131, 215))
             self.event()
             self.main_display.blit(self.masks_box, (0, 0))
             self.main_display.blit(self.images_box, (RESOLUTION_X-BOX_WIDTH, 0))
