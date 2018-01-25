@@ -15,6 +15,7 @@ MODE = pygame.DOUBLEBUF  # [pygame.DOUBLEBUF or pygame.FULLSCREEN]
 RESOLUTION_X = 800
 RESOLUTION_Y = 600
 BOX_WIDTH = 150
+BOX_OFFSET = 7
 BAR_HEIGHT = 30
 FOOTER = 10
 # R G B COLORS:
@@ -39,6 +40,7 @@ class ImageBox:
 
     def load_image(self, name):
         self.image = ImageOpenCV(name)
+        self.mode = 0
         if self.image.width <= self.width:
             self.x_pivot = int((self.width - self.image.width) / 2)
         else:
@@ -49,8 +51,8 @@ class ImageBox:
         else:
             self.y_pivot = None
             self.y_delta = self.image.height - self.height
-        self.image_converted = pygame.image.frombuffer(self.image.to_draw().tostring(),
-                                                       self.image.to_draw().shape[1::-1], "RGB")
+        self.image_converted = pygame.image.frombuffer(self.image.to_draw(0).tostring(),
+                                                       self.image.to_draw(0).shape[1::-1], "RGB")
         self.change_position(int(self.width/2), int(self.height/2))
 
     def change_mode(self):
@@ -79,9 +81,11 @@ class ImageBox:
 
     def put_mask(self, mask):
         if self.image is not None:
+            print()
             self.image.add_mask(mask)
-            self.image_converted = pygame.image.frombuffer(self.image.to_draw(self.mode).tostring(),
-                                                           self.image.to_draw(self.mode).shape[1::-1], "RGB")
+            self.image_converted = pygame.image.frombuffer(self.image.to_draw(0).tostring(),
+                                                           self.image.to_draw(0).shape[1::-1], "RGB")
+            self.change_position(int(self.width / 2), int(self.height / 2))
 
 
 class InterfaceModule:
@@ -94,25 +98,27 @@ class InterfaceModule:
         self.masks_box.background_color = SCROLLABLE_BG_COLOR
 
         print("Masks:")
+        tmp_instance = MaskInstance("none", None, BOX_WIDTH-BOX_OFFSET)
+        self.masks_box.elements.append(tmp_instance)
         for file in os.listdir("./masks"):
             if file.endswith(".png"):
                 print(file[:-4])
-                tmp_instance = MaskInstance(file[:-4], "./masks/"+file, BOX_WIDTH-5)
+                tmp_instance = MaskInstance(file[:-4], "./masks/"+file, BOX_WIDTH-BOX_OFFSET)
                 self.masks_box.elements.append(tmp_instance)
         self.masks_box.init_scroll()
 
         self.images_box = ScrollableBox(RESOLUTION_X-BOX_WIDTH, 0, BOX_WIDTH, RESOLUTION_Y)
         self.images_box.background_color = SCROLLABLE_BG_COLOR
-        self.active_mask = None
+        self.active_mask_name = str()
 
         print("Images")
         for file in os.listdir("./"):
             if file.endswith(".jpg"):
                 print(file)
-                tmp_instance = ImageInstance(file, BOX_WIDTH-5)
+                tmp_instance = ImageInstance(file, BOX_WIDTH-BOX_OFFSET)
                 self.images_box.elements.append(tmp_instance)
         self.images_box.init_scroll()
-        self.active_image = None
+        self.active_image_name = str()
 
         # TODO: Create Simple Menu Bar
         self.menu_bar = pygame.Surface((RESOLUTION_X - 2*BOX_WIDTH, BAR_HEIGHT))
@@ -135,12 +141,6 @@ class InterfaceModule:
             if event.type == KEYDOWN and event.key == K_m:
                 self.image_display.change_mode()
 
-            if event.type == KEYDOWN and event.key == K_c:
-                self.image_display.put_mask(self.mask)
-
-            if event.type == KEYDOWN and event.key == K_v:
-                self.image_display.put_mask(None)
-
             if event.type == MOUSEBUTTONDOWN:
                 return {"X": event.pos[0], "Y": event.pos[1], "button": event.button}
         return None
@@ -150,16 +150,21 @@ class InterfaceModule:
             action = self.event()
             self.main_display.blit(self.image_display.draw, (BOX_WIDTH, BAR_HEIGHT))
 
+            change_active_mask = None
+            change_active_image_name = None
+
             if action:
                 if self.masks_box.hoover((action["X"], action["Y"])):
-                    self.active_mask = self.masks_box.action(action)
+                    change_active_mask = self.masks_box.action(action)
                 if self.images_box.hoover((action["X"], action["Y"])):
-                    self.active_image = self.images_box.action(action)
+                    change_active_image_name = self.images_box.action(action)
 
-            if self.active_mask is not None:
-                print("MASKA WYBRANA")
-            if self.active_image is not None:
-                self.image_display.load_image(self.active_image)
+            if change_active_mask is not None:
+                self.active_mask_name, active_mask = change_active_mask
+                self.image_display.put_mask(active_mask)
+            if change_active_image_name is not None:
+                self.active_image_name = change_active_image_name
+                self.image_display.load_image(self.active_image_name)
 
             self.main_display.blit(self.masks_box.draw(), self.masks_box.pivot)
             self.main_display.blit(self.images_box.draw(), self.images_box.pivot)

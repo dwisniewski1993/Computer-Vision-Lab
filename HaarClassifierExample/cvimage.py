@@ -79,7 +79,10 @@ class MaskInstance(MainBox):
     def __init__(self, name, path, width):
         MainBox.__init__(self, 0, 0, width, 30)
         self.name = name
-        self.image = cv2.imread(path, cv2.IMREAD_UNCHANGED)
+        if path is None:
+            self.image = None
+        else:
+            self.image = cv2.imread(path, cv2.IMREAD_UNCHANGED)
         font_render = font.render(name.upper(), 1, FONT_COLOR)
         self.surface.blit(font_render, (5, 5))
 
@@ -88,7 +91,7 @@ class MaskInstance(MainBox):
 
     def action(self, action):
         print("MASK CLICK " + self.name)
-        return self.image
+        return self.name, self.image
 
 
 class ImageInstance(MainBox):

@@ -140,8 +140,10 @@ class ScrollableBox(MainBox):
         new_action = copy.deepcopy(action)
         new_action['X'] -= self.pivot[0]
         new_action['Y'] -= self.pivot[1] - self.scroll.position
+        image = None
         for key in self.to_draw:
             if self.element_dictionary[key].hoover((new_action['X'], new_action['Y'])):
                 image = self.element_dictionary[key].action(new_action)
         del new_action
-        return image
+        if image is not None:
+            return image
