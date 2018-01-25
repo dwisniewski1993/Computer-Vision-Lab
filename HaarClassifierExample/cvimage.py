@@ -9,13 +9,12 @@ MIN_NEIGHBORS = 5
 FACE_COLOR = (255, 0, 0)  # B G R
 EYES_COLOR = (0, 255, 0)  # B G R
 BORDER_SIZE = 1
-INTERPOLATION_MODE = cv2.INTER_LINEAR
 
 
 class ImageOpenCV:
-    def __init__(self, name, width, height):
-        self.width = width
-        self.height = height
+    def __init__(self, name):
+        self.width = None
+        self.height = None
         self.file_name = str()
         self.image = None
         self.image_wth_borders = None
@@ -26,8 +25,9 @@ class ImageOpenCV:
 
     def load_image(self, name):
         self.file_name = name
-        image = cv2.imread(name)
-        self.image = cv2.resize(image, (self.width, self.height), interpolation=INTERPOLATION_MODE)
+        self.image = cv2.imread(name)
+        self.width = self.image.shape[1]
+        self.height = self.image.shape[0]
         self.image_wth_borders = copy.deepcopy(self.image)
         self.gray = cv2.cvtColor(self.image, cv2.COLOR_BGR2GRAY)
         self.detect_faces_and_eyes()
