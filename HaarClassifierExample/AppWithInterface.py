@@ -1,3 +1,4 @@
+import os
 import pygame
 import cv2
 from pygame.locals import QUIT, KEYDOWN, K_ESCAPE, K_m, MOUSEMOTION, K_c, K_v
@@ -86,9 +87,21 @@ class InterfaceModule:
         # TODO: Create Box with all masks
         self.masks_box = pygame.Surface((BOX_WIDTH, RESOLUTION_Y))
         self.masks_box.fill((30, 20, 10))
+
+        print("Masks:")
+        for file in os.listdir("./masks"):
+            if file.endswith(".png"):
+                print(file)
+
         # TODO: Create Box with all images in app directory
         self.images_box = pygame.Surface((BOX_WIDTH, RESOLUTION_Y))
         self.images_box.fill((10, 20, 30))
+
+        print("Images")
+        for file in os.listdir("./"):
+            if file.endswith(".jpg"):
+                print(file)
+
         # TODO: Create Simple Menu Bar
         self.menu_bar = pygame.Surface((RESOLUTION_X - 2*BOX_WIDTH, BAR_HEIGHT))
         self.menu_bar.fill((100, 100, 100))
