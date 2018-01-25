@@ -1,5 +1,5 @@
 import pygame
-from pygame.locals import QUIT, KEYDOWN, K_ESCAPE, MOUSEMOTION
+from pygame.locals import QUIT, KEYDOWN, K_ESCAPE, K_m, MOUSEMOTION
 from sys import exit
 from cvimage import ImageOpenCV
 
@@ -44,8 +44,17 @@ class ImageBox:
             else:
                 self.y_pivot = None
                 self.y_delta = self.image.height - self.height
-        self.image_converted = pygame.image.frombuffer(self.image.to_draw().tostring(), self.image.to_draw().shape[1::-1], "RGB")
+        self.image_converted = pygame.image.frombuffer(self.image.to_draw().tostring(),
+                                                       self.image.to_draw().shape[1::-1], "RGB")
         self.change_position(0, 0)
+
+    def change_mode(self):
+        if self.mode == 0:
+            self.mode = 1
+        else:
+            self.mode = 0
+        self.image_converted = pygame.image.frombuffer(self.image.to_draw(self.mode).tostring(),
+                                                       self.image.to_draw(self.mode).shape[1::-1], "RGB")
 
     def change_position(self, x, y):
         x_percent = x / self.width
@@ -90,6 +99,9 @@ class InterfaceModule:
                 if BOX_WIDTH <= event.pos[0] <= RESOLUTION_X-BOX_WIDTH:
                     if BAR_HEIGHT <= event.pos[1]:
                         self.image_display.change_position(event.pos[0]-BOX_WIDTH, event.pos[1]-BAR_HEIGHT)
+
+            if event.type == KEYDOWN and event.key == K_m:
+                self.image_display.change_mode()
 
     def run(self):
         while True:
