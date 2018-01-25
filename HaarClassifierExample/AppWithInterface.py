@@ -1,7 +1,7 @@
 import os
 import pygame
 import cv2
-from pygame.locals import QUIT, KEYDOWN, K_ESCAPE, K_m, K_c, K_v, MOUSEMOTION, MOUSEBUTTONDOWN
+from pygame.locals import QUIT, KEYDOWN, K_ESCAPE, K_m, K_l, MOUSEMOTION, MOUSEBUTTONDOWN
 from sys import exit
 
 pygame.init()
@@ -63,6 +63,8 @@ class ImageBox:
         if self.image_converted:
             self.image_converted = pygame.image.frombuffer(self.image.to_draw(self.mode).tostring(),
                                                            self.image.to_draw(self.mode).shape[1::-1], "RGB")
+        if self.image is not None:
+            self.change_position(int(self.width / 2), int(self.height / 2))
 
     def change_position(self, x, y):
         x_percent = x / self.width
@@ -120,9 +122,13 @@ class InterfaceModule:
         self.images_box.init_scroll()
         self.active_image_name = str()
 
-        # TODO: Create Simple Menu Bar
         self.menu_bar = pygame.Surface((RESOLUTION_X - 2*BOX_WIDTH, BAR_HEIGHT))
-        self.menu_bar.fill((100, 100, 100))
+        self.menu_bar.fill((7, 13, 19))
+
+        self.footer = pygame.Surface((RESOLUTION_X - 2*BOX_WIDTH, FOOTER))
+        self.footer.fill((7, 13, 19))
+
+        self.movement = True
 
     def event(self):
         for event in pygame.event.get():
@@ -133,13 +139,19 @@ class InterfaceModule:
                 exit()
 
             if self.image_display.image_converted is not None:
-                if event.type == MOUSEMOTION:
+                if event.type == MOUSEMOTION and self.movement:
                     if BOX_WIDTH <= event.pos[0] <= RESOLUTION_X-BOX_WIDTH:
                         if BAR_HEIGHT <= event.pos[1] <= RESOLUTION_Y-FOOTER:
                             self.image_display.change_position(event.pos[0]-BOX_WIDTH, event.pos[1]-BAR_HEIGHT)
 
             if event.type == KEYDOWN and event.key == K_m:
                 self.image_display.change_mode()
+
+            if event.type == KEYDOWN and event.key == K_l:
+                if self.movement:
+                    self.movement = False
+                else:
+                    self.movement = True
 
             if event.type == MOUSEBUTTONDOWN:
                 return {"X": event.pos[0], "Y": event.pos[1], "button": event.button}
@@ -169,6 +181,7 @@ class InterfaceModule:
             self.main_display.blit(self.masks_box.draw(), self.masks_box.pivot)
             self.main_display.blit(self.images_box.draw(), self.images_box.pivot)
             self.main_display.blit(self.menu_bar, (BOX_WIDTH, 0))
+            self.main_display.blit(self.footer, (BOX_WIDTH, RESOLUTION_Y-FOOTER))
             pygame.display.update()
 
 
