@@ -1,5 +1,7 @@
 import copy
 import cv2
+import pygame
+from boxes import MainBox
 
 face_cascade = cv2.CascadeClassifier('xml/haarcascade_frontalface_default.xml')
 # eye_cascade = cv2.CascadeClassifier('xml/haarcascade_eye.xml')
@@ -9,7 +11,9 @@ MIN_NEIGHBORS = 5
 FACE_COLOR = (255, 0, 0)  # B G R
 EYES_COLOR = (0, 255, 0)  # B G R
 BORDER_SIZE = 1
+FONT_COLOR = (42, 75, 111)
 
+font = pygame.font.Font("font.ttf", 13)
 
 class ImageOpenCV:
     def __init__(self, name):
@@ -69,3 +73,34 @@ class ImageOpenCV:
         else:
             image = self.image
         return cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+
+
+class MaskInstance(MainBox):
+    def __init__(self, name, path, width):
+        MainBox.__init__(self, 0, 0, width, 30)
+        self.name = name
+        self.image = cv2.imread(path, cv2.IMREAD_UNCHANGED)
+        font_render = font.render(name.upper(), 1, FONT_COLOR)
+        self.surface.blit(font_render, (5, 5))
+
+    def draw(self):
+        return self.surface
+
+    def action(self, action):
+        print("MASK CLICK " + self.name)
+        return self.image
+
+
+class ImageInstance(MainBox):
+    def __init__(self, name, width):
+        MainBox.__init__(self, 0, 0, width, 30)
+        self.name = name
+        font_render = font.render(name.upper(), 1, FONT_COLOR)
+        self.surface.blit(font_render, (5, 5))
+
+    def draw(self):
+        return self.surface
+
+    def action(self, action):
+        print("IMAGE CLICK " + self.name)
+        return self.name

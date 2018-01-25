@@ -2,9 +2,9 @@ import pygame
 import copy
 
 # Config variables
-DEFAULT_COLOR = (30, 30, 30)
-SCROLL_COLOR = (45, 45, 45)
-SLIDER_COLOR = (60, 60, 60)
+DEFAULT_COLOR = (21, 38, 56)
+SCROLL_COLOR = (21, 38, 56)
+SLIDER_COLOR = (42, 75, 111)
 
 
 class MainBox:
@@ -84,7 +84,7 @@ class ScrollableBox(MainBox):
         self.to_draw = None
         self.scroll = None
 
-    def set_scroll(self):
+    def init_scroll(self):
         self.element_dictionary = dict()
         if self.elements:
             counter = 0
@@ -130,7 +130,11 @@ class ScrollableBox(MainBox):
         elif action['button'] == 5:
             self.scroll.change_position(20)
         self.set_drawable()
-        self.new_actions(action)
+        image = self.new_actions(action)
+        if image is not None:
+            return image
+        else:
+            return None
 
     def new_actions(self, action):
         new_action = copy.deepcopy(action)
@@ -138,5 +142,6 @@ class ScrollableBox(MainBox):
         new_action['Y'] -= self.pivot[1] - self.scroll.position
         for key in self.to_draw:
             if self.element_dictionary[key].hoover((new_action['X'], new_action['Y'])):
-                self.element_dictionary[key].action(new_action)
+                image = self.element_dictionary[key].action(new_action)
         del new_action
+        return image
