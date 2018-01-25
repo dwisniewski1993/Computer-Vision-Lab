@@ -1,6 +1,6 @@
 import pygame
 import cv2
-from pygame.locals import QUIT, KEYDOWN, K_ESCAPE, K_m, MOUSEMOTION
+from pygame.locals import QUIT, KEYDOWN, K_ESCAPE, K_m, MOUSEMOTION, K_c, K_v
 from sys import exit
 from cvimage import ImageOpenCV
 
@@ -30,7 +30,7 @@ class ImageBox:
         self.mode = 0
 
     def load_image(self, name):
-        if not self.image:
+        if self.image is None:
             self.image = ImageOpenCV(name)
             if self.image.width <= self.width:
                 self.x_pivot = int((self.width - self.image.width) / 2)
@@ -44,7 +44,7 @@ class ImageBox:
                 self.y_delta = self.image.height - self.height
         self.image_converted = pygame.image.frombuffer(self.image.to_draw().tostring(),
                                                        self.image.to_draw().shape[1::-1], "RGB")
-        self.change_position(0, 0)
+        self.change_position(int(self.width/2), int(self.height/2))
 
     def change_mode(self):
         if self.mode == 0:
@@ -70,12 +70,19 @@ class ImageBox:
             self.draw.fill(IMAGE_BG_COLOR)
             self.draw.blit(self.image_converted, (x_position, y_position))
 
+    def put_mask(self, mask):
+        if self.image is not None:
+            self.image.add_mask(mask)
+            self.image_converted = pygame.image.frombuffer(self.image.to_draw(self.mode).tostring(),
+                                                           self.image.to_draw(self.mode).shape[1::-1], "RGB")
+
 
 class InterfaceModule:
     def __init__(self):
         self.main_display = pygame.display.set_mode((RESOLUTION_X, RESOLUTION_Y), MODE)
         self.image_display = ImageBox(RESOLUTION_X - 2*BOX_WIDTH, RESOLUTION_Y - BAR_HEIGHT - FOOTER)
         self.image_display.load_image("lena.jpg")
+        self.mask = cv2.imread("glasses.png", cv2.IMREAD_UNCHANGED)
         # TODO: Create Box with all masks
         self.masks_box = pygame.Surface((BOX_WIDTH, RESOLUTION_Y))
         self.masks_box.fill((30, 20, 10))
@@ -101,6 +108,12 @@ class InterfaceModule:
 
             if event.type == KEYDOWN and event.key == K_m:
                 self.image_display.change_mode()
+
+            if event.type == KEYDOWN and event.key == K_c:
+                self.image_display.put_mask(self.mask)
+
+            if event.type == KEYDOWN and event.key == K_v:
+                self.image_display.put_mask(None)
 
     def run(self):
         while True:

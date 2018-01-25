@@ -18,6 +18,7 @@ class ImageOpenCV:
         self.file_name = str()
         self.image = None
         self.image_wth_borders = None
+        self.image_original = None
         self.gray = None
         self.faces = None
         # self.eyes = None
@@ -29,6 +30,7 @@ class ImageOpenCV:
         self.width = self.image.shape[1]
         self.height = self.image.shape[0]
         self.image_wth_borders = copy.deepcopy(self.image)
+        self.image_original = copy.deepcopy(self.image)
         self.gray = cv2.cvtColor(self.image, cv2.COLOR_BGR2GRAY)
         self.detect_faces_and_eyes()
 
@@ -42,6 +44,20 @@ class ImageOpenCV:
             # self.eyes = eye_cascade.detectMultiScale(roi_gray)
             # for (x_eye, y_eye, width_eye, height_eye) in self.eyes:
             #     cv2.rectangle(roi_color, (x_eye, y_eye), (x_eye+width_eye, y_eye+height_eye), EYES_COLOR, BORDER_SIZE)
+
+    def add_mask(self, mask):
+        self.image = copy.deepcopy(self.image_original)
+        if mask is not None:
+            for (x, y, width, height) in self.faces:
+                scaled_mask = cv2.resize(mask, (width, height))
+
+                # add alpha
+                alpha_mask = scaled_mask[:, :, 3] / 255.0
+                alpha_image = 1.0 - alpha_mask
+
+                for c in range(0, 3):
+                    self.image[y:y+height, x:x+width, c] = (alpha_mask * scaled_mask[:, :, c] +
+                                                            alpha_image * self.image[y:y+height, x:x+width, c])
 
     def to_draw(self, flag=0):
         """
