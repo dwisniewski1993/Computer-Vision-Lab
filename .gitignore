@@ -162,5 +162,4 @@ ENV/
 .mypy_cache/
 
 .idea/
-xiii_references/
-python_tutorial
+HaarClassifierExample/.idea
