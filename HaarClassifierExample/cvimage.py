@@ -90,8 +90,9 @@ class MaskInstance(MainBox):
         return self.surface
 
     def action(self, action):
-        print("MASK CLICK " + self.name)
-        return self.name, self.image
+        if action["button"] == 1:
+            print("MASK CLICK " + self.name)
+            return self.name, self.image
 
 
 class ImageInstance(MainBox):
@@ -105,5 +106,6 @@ class ImageInstance(MainBox):
         return self.surface
 
     def action(self, action):
-        print("IMAGE CLICK " + self.name)
-        return self.name
+        if action["button"] == 1:
+            print("IMAGE CLICK " + self.name)
+            return self.name
